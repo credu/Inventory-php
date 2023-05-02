@@ -1,0 +1,28 @@
+/* Images */
+table {
+    table-layout: fixed;
+}
+
+td {
+    vertical-align: middle;
+    text-align: center;
+}
+
+.fit-container {
+    height: 0;
+    padding-bottom: 100%;
+    position: relative;
+}
+
+.fit-content {
+    border: 1px solid #00000025;
+    position: absolute;
+    object-fit: contain;
+    object-position: center;
+    height: 100%;
+    width: 100%;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+}
