@@ -62,6 +62,19 @@ const updatePaginationButtonStatus = () => {
     }
 }
 
+const activeShowUniqueMessage = (message) => {
+    const tr = document.createElement("tr");
+    const td = document.createElement("td");
+
+    td.classList.add("unique-message", "text-center");
+    td.colSpan = TABLE_COLUMNS;
+    td.textContent = message;
+
+    tr.append(td);
+    tableBody.replaceChildren(tr);
+    showUniqueMessage = true;
+}
+
 const printData = (data) => {
     
     if ( data.length == 0 ) {
@@ -74,6 +87,11 @@ const printData = (data) => {
     tableBody.replaceChildren("");
 
     data.forEach( (element) => createRowProduct(element) );
+}
+
+function updateMaxPage(totalProducts) {
+    maxPage = Math.ceil(totalProducts / TABLE_ROWS);
+    maxPageSpan.textContent = maxPage;
 }
 
 const fethDataBase = (from, rows) => {
@@ -89,28 +107,9 @@ const fethDataBase = (from, rows) => {
         });
 }
 
-// Table
 const refreshTable = () => {
     const from = ( actualPage - 1 ) * TABLE_ROWS;
     fethDataBase(from, TABLE_ROWS);
-}
-
-const activeShowUniqueMessage = (message) => {
-    const tr = document.createElement("tr");
-    const td = document.createElement("td");
-
-    td.classList.add("unique-message", "text-center");
-    td.colSpan = TABLE_COLUMNS;
-    td.textContent = message;
-
-    tr.append(td);
-    tableBody.replaceChildren(tr);
-    showUniqueMessage = true;
-}
-
-function updateMaxPage(totalProducts) {
-    maxPage = Math.ceil(totalProducts / TABLE_ROWS);
-    maxPageSpan.textContent = maxPage;
 }
 
 const setModalFormValues = (product, name, price, path) => {
@@ -119,6 +118,26 @@ const setModalFormValues = (product, name, price, path) => {
     modalForm.elements.price.value = price;
     modalForm.elements.file.value = "";
     modalImage.src = path;
+}
+
+const editButtonAction = ( product, name, price, path ) => {
+    setModalFormValues(product, name, price, path);
+    modal.show();
+}
+
+const deleteButtonAction = ( id ) => {
+    ProductService.deleteProductWithId(id)
+        .then(res => {
+            if (!res.ok) {
+                throw new Error('No se pudo eliminar el elemento');
+            }
+        })
+        .catch((error) => {
+            console.error(error);
+        })
+        .finally(() => {
+            refreshTable();
+        });
 }
 
 const createRowProduct = ({ product, name, price, path }) => {
@@ -154,25 +173,8 @@ const createRowProduct = ({ product, name, price, path }) => {
     deleteButton.append(deleteButtonSimbol);
     tdButtons.append(editButton, deleteButton);
 
-    editButton.addEventListener("click", () => {
-        setModalFormValues(product, name, price, path);
-        modal.show();
-    });
-
-    deleteButton.addEventListener("click", () => {
-        ProductService.deleteProductWithId( product )
-            .then( res => {
-                if (!res.ok) {
-                    throw new Error('No se pudo eliminar el elemento');
-                }
-            })
-            .catch( (error) => {
-                console.error(error);
-            })
-            .finally( () => {
-                refreshTable();
-            });
-    });
+    editButton.addEventListener("click", () => editButtonAction(product, name, price, path) );
+    deleteButton.addEventListener("click", () => deleteButtonAction(product) );
 
     tdName.textContent = name;
     tdPrice.textContent = "$" + price;
